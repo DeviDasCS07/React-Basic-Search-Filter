@@ -1,24 +1,51 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useEffect } from "react";
+import "./App.css";
+import axios from "axios";
+import CountryDetail from "./CountryDetail";
 
 function App() {
+  const [countries, setCountries] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [search, setSearch] = useState("");
+  const [filteredCountries, setFilteredCountries] = useState([]);
+
+  useEffect(() => {
+    setLoading(true);
+    axios
+      .get("https://restcountries.eu/rest/v2/all")
+      .then((res) => {
+        setCountries(res.data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setLoading(false);
+        console.log(err);
+      });
+  }, []);
+
+  useEffect(() => {
+    setFilteredCountries(
+      countries.filter((country) =>
+        country.name.toLowerCase().includes(search.toLowerCase())
+      )
+    );
+  }, [search, countries]);
+
+  if (loading) {
+    return <p>Loading countries...</p>;
+  }
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <h1>Countries Lists</h1>
+      <input
+        type="text"
+        placeholder="Search Countries"
+        onChange={(e) => setSearch(e.target.value)}
+      />
+      {filteredCountries.map((country, idx) => (
+        <CountryDetail key={idx} {...country} />
+      ))}
     </div>
   );
 }
